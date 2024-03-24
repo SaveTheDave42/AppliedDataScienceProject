@@ -1,0 +1,25 @@
+This Python script is designed to scrape email addresses from a specific webpage and save them in an Excel file. Here's a breakdown of what each part of the code does:
+
+1. **Import necessary libraries**: The script begins by importing the necessary Python libraries:
+   - `requests` for making HTTP requests.
+   - `xlwt` for writing data into an Excel file.
+   - `BeautifulSoup` from `bs4` for parsing HTML and XML documents.
+   - `os` for interacting with the operating system.
+
+2. **Initialize workbook and worksheet**: An Excel workbook is created and a sheet named 'Emails' is added to it. The first cell is labeled 'Emails'.
+
+3. **Define the URL to scrape**: The URL of the webpage to scrape is stored in the variable `urlString`.
+
+4. **Define the email extractor function**: The function `emailExtractor(urlString)` is defined to scrape the webpage at the given URL and extract all email addresses. It does this by:
+   - Sending a GET request to the URL and storing the response.
+   - Parsing the HTML content of the response using BeautifulSoup.
+   - Selecting all 'a' tags whose 'href' attribute starts with 'mailto'.
+   - Looping through these 'a' tags, extracting the email address from the 'href' attribute, and appending it to the `emailList`.
+
+5. **Call the email extractor function**: The `emailExtractor` function is called with `urlString` as the argument.
+
+6. **Write emails to the Excel file**: The script then loops through the `emailList`, writing each email address to a new row in the Excel file.
+
+7. **Save the Excel file**: Finally, the Excel file is saved with the name 'emails.xls'. 
+
+Please note that web scraping should be done responsibly and in accordance with the terms of service of the website being scraped. Some websites may prohibit scraping in their terms of service. It's also important to respect privacy and not use scraped data for unsolicited communications.
