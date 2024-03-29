@@ -1,4 +1,4 @@
-# pip install Flask requests
+#pip install Flask requests
 from flask import Flask, request, jsonify
 import requests
 
@@ -12,7 +12,7 @@ def get_coordinates():
         return jsonify({"error": "Missing address parameter"}), 400
 
     # Hier deinen API-Schlüssel für den Geocoding-Dienst einfügen
-    api_key = AIzaSyATsn7Z8zOmsoHGd8l1-l16v8v8QAs3ZEQ
+    api_key = "AIzaSyATsn7Z8zOmsoHGd8l1-l16v8v8QAs3ZEQ"
 
     # URL für den Geocoding-Dienst vorbereiten (Beispiel für Google Maps Geocoding API)
     url = f"https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={api_key}"
@@ -30,3 +30,6 @@ def get_coordinates():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+#Put in browser: 127.0.0.1:5000/getCoordinates?address=Strasse+Hausnummer,PLZ+Ort
+    
