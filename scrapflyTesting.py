@@ -55,6 +55,9 @@ json_data = json.loads(json_string)
 
 for item in json_data:
     id = item.get('id')
+    livingSpace = item.get('listings', {}).get('characteristics', {}).get('livingSpace')
+    rooms = item.get('listings', {}).get('characteristics', {}).get('numberOfRooms')
+    floor = item.get('listings', {}).get('characteristics', {}).get('floor')
     prices = item.get('prices', {})
     buy = prices.get('buy')
     price = buy.get('price') if buy is not None else None
@@ -65,9 +68,9 @@ for item in json_data:
     street = item.get('listing', {}).get('address', {}).get('street')
 
     if price is not None: 
-        print(f'id: {id}, price: {price}, latitude: {latitude}, longitude: {longitude}, locality: {locality}, postalCode: {postalCode}, street: {street}')
+        print(f'id: {id}, livingSpace: {livingSpace}, rooms: {rooms}, floor: {floor}, price: {price}, latitude: {latitude}, longitude: {longitude}, locality: {locality}, postalCode: {postalCode}, street: {street}')
     else: 
-        print(f'id: {id}, price: Not Available, latitude: {latitude}, longitude: {longitude}, locality: {locality}, postalCode: {postalCode}, street: {street}')
+        print(f'id: {id}, livingSpace: {livingSpace}, rooms: {rooms}, floor: {floor}, price: Not Available, latitude: {latitude}, longitude: {longitude}, locality: {locality}, postalCode: {postalCode}, street: {street}')
 
     #print(json_data[0])
 
