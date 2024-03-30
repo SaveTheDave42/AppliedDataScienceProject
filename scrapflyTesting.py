@@ -55,7 +55,9 @@ json_data = json.loads(json_string)
 
 for item in json_data:
     id = item.get('id')
-    price = item.get('prices', {}).get('buy', {}).get('price')
+    prices = item.get('prices', {})
+    buy = prices.get('buy')
+    price = buy.get('price') if buy is not None else None
     latitude = item.get('listing', {}).get('address', {}).get('geoCoordinates', {}).get('latitude')
     longitude = item.get('listing', {}).get('address', {}).get('geoCoordinates', {}).get('longitude')
     locality = item.get('listing', {}).get('address', {}).get('locality')
