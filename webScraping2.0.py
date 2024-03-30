@@ -26,7 +26,3 @@ def scrape_homegate(url):
 
 # Call the function with the URL of the website you want to scrape
 scrape_homegate('https://www.homegate.ch/kaufen/immobilien/kanton-zuerich/trefferliste')
-
-#<div class="HgListingRoomsLivingSpace_roomsLivingSpace_GyVgq"><span><strong>4.5</strong> Zimmer </span><span><strong>105m²</strong> Wohnfläche </span></div>
-
-#<span class="HgListingCard_price_JoPAs"> CHF 880’000.– <!----><!----></span>
