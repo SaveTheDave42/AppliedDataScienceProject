@@ -1,5 +1,6 @@
 import asyncio
 import json
+import pandas as pd
 from typing import List, Dict, Literal
 from httpx import AsyncClient, Response
 from parsel import Selector
@@ -53,24 +54,51 @@ if __name__ == "__main__":
 json_string = json.dumps(search_data, indent=2)
 json_data = json.loads(json_string)
 
-for item in json_data:
-    id = item.get('id')
-    livingSpace = item.get('listings', {}).get('characteristics', {}).get('livingSpace')
-    rooms = item.get('listings', {}).get('characteristics', {}).get('numberOfRooms')
-    floor = item.get('listings', {}).get('characteristics', {}).get('floor')
-    prices = item.get('prices', {})
-    buy = prices.get('buy')
-    price = buy.get('price') if buy is not None else None
-    latitude = item.get('listing', {}).get('address', {}).get('geoCoordinates', {}).get('latitude')
-    longitude = item.get('listing', {}).get('address', {}).get('geoCoordinates', {}).get('longitude')
-    locality = item.get('listing', {}).get('address', {}).get('locality')
-    postalCode = item.get('listing', {}).get('address', {}).get('postalCode')
-    street = item.get('listing', {}).get('address', {}).get('street')
+# Specify the columns to include in the DataFrame
+columns = ['id', 'listing']
 
-    if price is not None: 
-        print(f'id: {id}, livingSpace: {livingSpace}, rooms: {rooms}, floor: {floor}, price: {price}, latitude: {latitude}, longitude: {longitude}, locality: {locality}, postalCode: {postalCode}, street: {street}')
-    else: 
-        print(f'id: {id}, livingSpace: {livingSpace}, rooms: {rooms}, floor: {floor}, price: Not Available, latitude: {latitude}, longitude: {longitude}, locality: {locality}, postalCode: {postalCode}, street: {street}')
+# Extract the 'listing' data
+listing_data = [item['listing'] for item in json_data]
+
+# Extract the 'prices' data
+# prices_data = [item['listing']['prices']['buy'] for item in json_data]
+# prices_data = [{'id': item['id'], **item['listing']['prices']['buy']} for item in json_data]
+prices_data = [{'id': item['id'], **item['listing']['prices']['buy'], **item['listing']['address'], **item['listing']['address']['geoCoordinates']} for item in json_data]
+
+# Create the DataFrame
+df = pd.DataFrame(listing_data)
+# Create the DataFrame
+df_prices = pd.DataFrame(prices_data)
+
+# df = pd.json_normalize(json_data, record_path=['listing'])
+
+# Create the DataFrame
+# df = pd.DataFrame(json_data, columns=columns)
+# Set the index of the DataFrame to the 'id' column
+df.set_index('id', inplace=True)
+# Set the index of the DataFrame to the 'id' column
+# df_prices.set_index('id', inplace=True)
+print(df)
+print(df_prices)
+
+# for item in json_data:
+#    id = item.get('id')
+#    livingSpace = item.get('listings', {}).get('characteristics', {}).get('livingSpace')
+#    rooms = item.get('listings', {}).get('characteristics', {}).get('numberOfRooms')
+#    floor = item.get('listings', {}).get('characteristics', {}).get('floor')
+#    prices = item.get('prices', {})
+#    buy = prices.get('buy')
+#    price = buy.get('price') if buy is not None else None
+#    latitude = item.get('listing', {}).get('address', {}).get('geoCoordinates', {}).get('latitude')
+#    longitude = item.get('listing', {}).get('address', {}).get('geoCoordinates', {}).get('longitude')
+#    locality = item.get('listing', {}).get('address', {}).get('locality')
+#    postalCode = item.get('listing', {}).get('address', {}).get('postalCode')
+#    street = item.get('listing', {}).get('address', {}).get('street')
+
+#    if price is not None: 
+#        print(f'id: {id}, livingSpace: {livingSpace}, rooms: {rooms}, floor: {floor}, price: {price}, latitude: {latitude}, longitude: {longitude}, locality: {locality}, postalCode: {postalCode}, street: {street}')
+#    else: 
+#        print(f'id: {id}, livingSpace: {livingSpace}, rooms: {rooms}, floor: {floor}, price: Not Available, latitude: {latitude}, longitude: {longitude}, locality: {locality}, postalCode: {postalCode}, street: {street}')
 
     #print(json_data[0])
 
