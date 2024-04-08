@@ -63,7 +63,7 @@ listing_data = [item['listing'] for item in json_data]
 # Extract the 'prices' data
 # prices_data = [item['listing']['prices']['buy'] for item in json_data]
 # prices_data = [{'id': item['id'], **item['listing']['prices']['buy']} for item in json_data]
-prices_data = [{'id': item['id'], **item['listing']['prices']['buy'], **item['listing']['address'], **item['listing']['address']['geoCoordinates']} for item in json_data]
+prices_data = [{'id': item['id'], **item['listing']['prices']['buy'], **item['listing']['address'], **item['listing']['characteristics'], **item['listing']['address']['geoCoordinates']} for item in json_data]
 
 # Create the DataFrame
 df = pd.DataFrame(listing_data)
