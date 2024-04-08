@@ -127,7 +127,7 @@ data_dict = df_prices.to_dict('records')
 # Iterate over the list of dictionaries and insert each one into the MySQL table
 for data in data_dict:
     query = "INSERT INTO homegate (homegateid, price, rooms, floor, livingSpace, street, latitude, longitude, locality, postalcode) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-    values = (data['id'], data['price'], data['rooms'], data['floor'], data['livingSpace'], data['street'], data['latitude'], data['longitude'], data['locality'], data['postalcode'])
+    values = (data['id'], data['price'], data['numberOfRooms'], data['floor'], data['livingSpace'], data['street'], data['latitude'], data['longitude'], data['locality'], data['postalCode'])
     cursor.execute(query, values)
 
 # Commit the transaction
