@@ -4,6 +4,7 @@ import pandas as pd
 from typing import List, Dict, Literal
 from httpx import AsyncClient, Response
 from parsel import Selector
+import mysql.connector
 
 client = AsyncClient(
     headers={
@@ -107,3 +108,31 @@ print(df_prices)
 
     # print(f'id: {id}, price: {price}, latitude: {latitude}, longitude: {longitude}, locality: {locality}, postalCode: {postalCode}, street: {street}')
 
+#Write data to database
+# Create a connection to the database
+db = mysql.connector.connect(
+    host="localhost",
+    user="user",
+    password="password",
+    port="3306",
+    database="realestatepredictor"
+)
+
+# Create a cursor object
+cursor = db.cursor()
+
+# Convert the DataFrame to a list of dictionaries
+data_dict = df_prices.to_dict('records')
+
+# Iterate over the list of dictionaries and insert each one into the MySQL table
+for data in data_dict:
+    query = "INSERT INTO homegate (homegateid, price, rooms, floor, livingSpace, street, latitude, longitude, locality, postalcode) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    values = (data['id'], data['price'], data['rooms'], data['floor'], data['livingSpace'], data['street'], data['latitude'], data['longitude'], data['locality'], data['postalcode'])
+    cursor.execute(query, values)
+
+# Commit the transaction
+db.commit()
+
+# Close the cursor and connection
+cursor.close()
+db.close()
