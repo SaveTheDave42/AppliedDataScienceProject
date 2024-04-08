@@ -5,6 +5,7 @@ from typing import List, Dict, Literal
 from httpx import AsyncClient, Response
 from parsel import Selector
 import mysql.connector
+import numpy as np
 
 client = AsyncClient(
     headers={
@@ -62,51 +63,18 @@ columns = ['id', 'listing']
 listing_data = [item['listing'] for item in json_data]
 
 # Extract the 'prices' data
-# prices_data = [item['listing']['prices']['buy'] for item in json_data]
-# prices_data = [{'id': item['id'], **item['listing']['prices']['buy']} for item in json_data]
 prices_data = [{'id': item['id'], **item['listing']['prices']['buy'], **item['listing']['address'], **item['listing']['characteristics'], **item['listing']['address']['geoCoordinates']} for item in json_data]
 
 # Create the DataFrame
 df = pd.DataFrame(listing_data)
 # Create the DataFrame
 df_prices = pd.DataFrame(prices_data)
+# Replace 'NaN' values with None
+df_prices = df_prices.replace({np.nan: None})
 
-# df = pd.json_normalize(json_data, record_path=['listing'])
-
-# Create the DataFrame
-# df = pd.DataFrame(json_data, columns=columns)
 # Set the index of the DataFrame to the 'id' column
 df.set_index('id', inplace=True)
-# Set the index of the DataFrame to the 'id' column
-# df_prices.set_index('id', inplace=True)
-print(df)
-print(df_prices)
-
-# for item in json_data:
-#    id = item.get('id')
-#    livingSpace = item.get('listings', {}).get('characteristics', {}).get('livingSpace')
-#    rooms = item.get('listings', {}).get('characteristics', {}).get('numberOfRooms')
-#    floor = item.get('listings', {}).get('characteristics', {}).get('floor')
-#    prices = item.get('prices', {})
-#    buy = prices.get('buy')
-#    price = buy.get('price') if buy is not None else None
-#    latitude = item.get('listing', {}).get('address', {}).get('geoCoordinates', {}).get('latitude')
-#    longitude = item.get('listing', {}).get('address', {}).get('geoCoordinates', {}).get('longitude')
-#    locality = item.get('listing', {}).get('address', {}).get('locality')
-#    postalCode = item.get('listing', {}).get('address', {}).get('postalCode')
-#    street = item.get('listing', {}).get('address', {}).get('street')
-
-#    if price is not None: 
-#        print(f'id: {id}, livingSpace: {livingSpace}, rooms: {rooms}, floor: {floor}, price: {price}, latitude: {latitude}, longitude: {longitude}, locality: {locality}, postalCode: {postalCode}, street: {street}')
-#    else: 
-#        print(f'id: {id}, livingSpace: {livingSpace}, rooms: {rooms}, floor: {floor}, price: Not Available, latitude: {latitude}, longitude: {longitude}, locality: {locality}, postalCode: {postalCode}, street: {street}')
-
-    #print(json_data[0])
-
-    # print(item.get('prices'))
-    # print(item.get('prices', {}).get('buy'))
-
-    # print(f'id: {id}, price: {price}, latitude: {latitude}, longitude: {longitude}, locality: {locality}, postalCode: {postalCode}, street: {street}')
+# print(df_prices)
 
 #Write data to database
 # Create a connection to the database
@@ -123,6 +91,11 @@ cursor = db.cursor()
 
 # Convert the DataFrame to a list of dictionaries
 data_dict = df_prices.to_dict('records')
+
+# Clear the table before inserting the new data
+cursor.execute("DELETE FROM homegate")
+db.commit()
+print("All entries deleted from 'homegate'.")
 
 # Iterate over the list of dictionaries and insert each one into the MySQL table
 for data in data_dict:
