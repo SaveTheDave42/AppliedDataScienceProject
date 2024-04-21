@@ -1,55 +1,34 @@
-import mysql.connector
+#pip install Flask requests
 from flask import Flask, request, jsonify
 import requests
-from sklearn.neighbors import NearestNeighbors
-import numpy as np
 
 app = Flask(__name__)
 
-# Datenbankverbindung einrichten
-db = mysql.connector.connect(
-    host="localhost",
-    user="user",
-    password="password",
-    database="realestatepredictor"
-)
-cursor = db.cursor()
-
-# KNN-Modell vorbereiten
-cursor.execute("SELECT id, latitude, longitude FROM homegate")
-data = cursor.fetchall()
-coordinates = np.array([[float(lat), float(lon)] for _, lat, lon in data])
-knn = NearestNeighbors(n_neighbors=1, algorithm='ball_tree')
-knn.fit(coordinates)
-
-
 @app.route('/getCoordinates', methods=['GET'])
 def get_coordinates():
+    # Die Adresse aus der Anfrage holen
     address = request.args.get('address')
     if not address:
         return jsonify({"error": "Missing address parameter"}), 400
 
+    # Hier deinen API-Schlüssel für den Geocoding-Dienst einfügen
     api_key = "AIzaSyATsn7Z8zOmsoHGd8l1-l16v8v8QAs3ZEQ"
+
+    # URL für den Geocoding-Dienst vorbereiten (Beispiel für Google Maps Geocoding API)
     url = f"https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={api_key}"
 
+    # Die Anfrage an den Geocoding-Dienst senden
     response = requests.get(url)
     data = response.json()
+
+    # Koordinaten aus der Antwort extrahieren
     if data['status'] == 'OK':
-        coords = data['results'][0]['geometry']['location']
-        lat, lng = coords['lat'], coords['lng']
-        # Finde das nächste Objekt mit KNN
-        _, indices = knn.kneighbors([[lat, lng]])
-        closest_id = indices[0][0]
-        # Daten des nächstgelegenen Objekts abrufen
-        cursor.execute("SELECT * FROM homegate WHERE id = %s", (closest_id,))
-        property_data = cursor.fetchone()
-        return jsonify({
-            "closest_property": property_data,
-            "coordinates": coords
-        })
+        coordinates = data['results'][0]['geometry']['location']
+        return jsonify(coordinates)
     else:
         return jsonify({"error": "Address not found"}), 404
 
-
 if __name__ == '__main__':
     app.run(debug=True)
+
+#Put in browser: 127.0.0.1:5000/getCoordinates?address=Strasse+Hausnummer,PLZ+Ort
