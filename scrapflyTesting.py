@@ -40,7 +40,8 @@ async def scrape_search(city: str, query_type: Literal["rent", "buy"] = "buy") -
         data = parse_next_data(await response)
         search_data.extend(data["resultList"]["search"]["fullSearch"]["result"]["listings"])
         print(f"Scraped {len(search_data)} property listings from {city} search")
-        await asyncio.sleep(120)  # Add a 2-minute delay
+        await asyncio.sleep(10)  # delay
+    await client.aclose()  # close the async instance
     return search_data
 
 if __name__ == "__main__":
