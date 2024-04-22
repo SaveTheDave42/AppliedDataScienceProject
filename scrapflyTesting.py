@@ -10,6 +10,7 @@ import numpy as np
 # Define a list of cities you want to scrape
 cities_to_scrape = ["zurich", "winterthur"]  # Add more cities as needed
 
+"""
 client = AsyncClient(
     headers={
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36",
@@ -17,6 +18,7 @@ client = AsyncClient(
         "Accept-Language": "en-US,en;q=0.9",
     }
 )
+"""
 
 def parse_next_data(response: Response) -> Dict:
     """Parse listing data from homegate search"""
@@ -27,7 +29,8 @@ def parse_next_data(response: Response) -> Dict:
     next_data_json = json.loads(next_data.strip("window.__INITIAL_STATE__="))
     return next_data_json
 
-async def scrape_search(city: str, query_type: Literal["rent", "buy"] = "buy") -> List[Dict]:
+async def scrape_search(client, city: str, query_type: Literal["rent", "buy"] = "buy") -> List[Dict]:
+# async def scrape_search(city: str, query_type: Literal["rent", "buy"] = "buy") -> List[Dict]:
     """Scrape listing data from homegate search pages for a specific city"""
     url = f"https://www.homegate.ch/{query_type}/real-estate/city-{city}/matching-list"
     first_page = await client.get(url)
@@ -44,18 +47,21 @@ async def scrape_search(city: str, query_type: Literal["rent", "buy"] = "buy") -
     return search_data
 
 if __name__ == "__main__":
+    client = AsyncClient(
+        headers={
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "Accept-Language": "en-US,en;q=0.9",
+        }
+    )
     all_search_data = []
     for city in cities_to_scrape:
-        city_search_data = asyncio.run(scrape_search(city, query_type="buy"))
+        city_search_data = asyncio.run(scrape_search(client, city, query_type="buy"))
         all_search_data.extend(city_search_data)
-    
-    # Close client
-    asyncio.run(client.aclose())
+    asyncio.run(client.aclose())  # close the async instance
 
     json_string = json.dumps(all_search_data, indent=2)
     json_data = json.loads(json_string)
-
-
 
 # Specify the columns to include in the DataFrame
 columns = ['id', 'listing']
