@@ -83,7 +83,7 @@ df_prices = df_prices.replace({np.nan: None})
 df.set_index('id', inplace=True)
 # print(df_prices)
 
-#Write data to database
+# Write data to database
 # Create a connection to the database
 db = mysql.connector.connect(
     host="localhost",
