@@ -23,7 +23,7 @@ def parse_next_data(response: Response) -> Dict:
     # extract data in JSON from script tags
     next_data = selector.xpath("//script[contains(text(),'window.__INITIAL_STATE__')]/text()").get()
     if not next_data:
-        return
+        return {}  # return an empty dictionary instead of None
     next_data_json = json.loads(next_data.strip("window.__INITIAL_STATE__="))
     return next_data_json
 
@@ -77,7 +77,10 @@ print(json_data)
 listing_data = [item['listing'] for item in json_data]
 
 # Extract the 'prices' data
-prices_data = [{'id': item['id'], **item['listing']['prices']['buy'], **item['listing']['address'], **item['listing']['characteristics'], **item['listing']['address']['geoCoordinates']} for item in json_data]
+prices_data = []
+for item in json_data:
+    if 'prices' in item['listing'] and 'buy' in item['listing']['prices']:
+        prices_data.append({'id': item['id'], **item['listing']['prices']['buy'], **item['listing']['address'], **item['listing']['characteristics'], **item['listing']['address']['geoCoordinates']})
 
 # Create the DataFrame
 df = pd.DataFrame(listing_data)
