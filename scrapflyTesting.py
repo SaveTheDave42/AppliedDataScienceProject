@@ -7,9 +7,11 @@ from parsel import Selector
 import mysql.connector
 import numpy as np
 
+# Define a list of cities you want to scrape
+cities_to_scrape = ["zurich", "winterthur"]  # Add more cities as needed
+
 client = AsyncClient(
     headers={
-        # use same headers as a popular web browser (Chrome on Windows in this case)
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
         "Accept-Language": "en-US,en;q=0.9",
@@ -17,44 +19,38 @@ client = AsyncClient(
 )
 
 def parse_next_data(response: Response) -> Dict:
-    """parse listing data from homegate search"""
+    """Parse listing data from homegate search"""
     selector = Selector(response.text)
-    # extract data in JSON from script tags
     next_data = selector.xpath("//script[contains(text(),'window.__INITIAL_STATE__')]/text()").get()
     if not next_data:
-        return
+        return {}
     next_data_json = json.loads(next_data.strip("window.__INITIAL_STATE__="))
     return next_data_json
 
-async def scrape_search(query_type: Literal["rent", "buy"] = "buy") -> List[Dict]:
-    """scrape listing data from homegate search pages"""
-    # change the below URL to the desired search but validate it in the browser first
-    url = f"https://www.homegate.ch/{query_type}/real-estate/city-zurich/matching-list"
-    # scrape the first search page first
+async def scrape_search(city: str, query_type: Literal["rent", "buy"] = "buy") -> List[Dict]:
+    """Scrape listing data from homegate search pages for a specific city"""
+    url = f"https://www.homegate.ch/{query_type}/real-estate/city-{city}/matching-list"
     first_page = await client.get(url)
     data = parse_next_data(first_page)["resultList"]["search"]["fullSearch"]["result"]
     search_data = data["listings"]
-    # get the number of maximum search pages available
     max_search_pages = data["pageCount"]
-    print(f"scraped first search page, remaining ({max_search_pages} search pages)")
-    # add the remaining search pages in a scraping list
+    print(f"Scraped first search page for {city}, remaining ({max_search_pages} search pages)")
     other_pages = [client.get(url=str(first_page.url) + f"?ep={page}") for page in range(2, max_search_pages + 1)]
-    # scrape the remaining search pages concurrently
     for response in asyncio.as_completed(other_pages):
         data = parse_next_data(await response)
         search_data.extend(data["resultList"]["search"]["fullSearch"]["result"]["listings"])
-    print(f"scraped {len(search_data)} property listings from search")
+        print(f"Scraped {len(search_data)} property listings from {city} search")
+        await asyncio.sleep(120)  # Add a 2-minute delay
     return search_data
 
-# run the scraping function
 if __name__ == "__main__":
-    search_data = asyncio.run(scrape_search(
-        query_type = "buy",
-    ))
-    # print(json.dumps(search_data, indent=2))
+    all_search_data = []
+    for city in cities_to_scrape:
+        city_search_data = asyncio.run(scrape_search(city, query_type="buy"))
+        all_search_data.extend(city_search_data)
 
-json_string = json.dumps(search_data, indent=2)
-json_data = json.loads(json_string)
+    json_string = json.dumps(all_search_data, indent=2)
+    json_data = json.loads(json_string)
 
 # Specify the columns to include in the DataFrame
 columns = ['id', 'listing']
