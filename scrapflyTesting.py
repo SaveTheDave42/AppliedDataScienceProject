@@ -8,7 +8,7 @@ import mysql.connector
 import numpy as np
 
 # Add cities to scrape
-cities_to_scrape = ["zurich", "winterthur"] 
+cities_to_scrape = ["zurich", "winterthur", "uster", "dubendorf", "dietlikon", "bulach", "horgen", "schlieren", "opfikon", "kloten", "volketswil"] 
 
 # Create an AsyncClient instance, and set the headers
 client = AsyncClient(
@@ -43,7 +43,7 @@ async def scrape_search(city: str, query_type: Literal["rent", "buy"] = "buy") -
         data = parse_next_data(await response)
         search_data.extend(data["resultList"]["search"]["fullSearch"]["result"]["listings"])
         print(f"Scraped {len(search_data)} property listings from {city} search")
-        await asyncio.sleep(10)  # delay
+        await asyncio.sleep(60)  # delay
     return search_data
 
 # Main function
