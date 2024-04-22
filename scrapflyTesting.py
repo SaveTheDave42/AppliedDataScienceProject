@@ -41,7 +41,6 @@ async def scrape_search(city: str, query_type: Literal["rent", "buy"] = "buy") -
         search_data.extend(data["resultList"]["search"]["fullSearch"]["result"]["listings"])
         print(f"Scraped {len(search_data)} property listings from {city} search")
         await asyncio.sleep(10)  # delay
-    await client.aclose()  # close the async instance
     return search_data
 
 if __name__ == "__main__":
@@ -49,9 +48,14 @@ if __name__ == "__main__":
     for city in cities_to_scrape:
         city_search_data = asyncio.run(scrape_search(city, query_type="buy"))
         all_search_data.extend(city_search_data)
+    
+    # Close client
+    asyncio.run(client.aclose())
 
     json_string = json.dumps(all_search_data, indent=2)
     json_data = json.loads(json_string)
+
+
 
 # Specify the columns to include in the DataFrame
 columns = ['id', 'listing']
